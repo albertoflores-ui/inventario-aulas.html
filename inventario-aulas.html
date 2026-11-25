@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d9488">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Inventario Aulas">
+  <title>Inventario de Aulas</title>
+  <link id="manifest-link" rel="manifest">
+  <link id="apple-icon" rel="apple-touch-icon">
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --surface: #ffffff;
+      --surface-alt: #f4f7fa;
+      --text: #131c2e;
+      --text-muted: #5b6b82;
+      --primary: #0d9488;
+      --primary-hover: #0f766e;
+      --accent: #6366f1;
+      --danger: #e11d48;
+      --danger-bg: #ffe4e6;
+      --success: #059669;
+      --success-bg: #d1fae5;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --border: #d5dee9;
+      --radius: 16px;
+      --shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --surface: #151f32;
+        --surface-alt: #1c2841;
+        --text: #f1f5f9;
+        --text-muted: #94a3b8;
+        --primary: #14b8a6;
+        --primary-hover: #2dd4bf;
+        --accent: #818cf8;
+        --danger: #fb7185;
+        --danger-bg: rgba(244, 63, 94, 0.18);
+        --success: #34d399;
+        --success-bg: rgba(16, 185, 129, 0.18);
+        --warning: #fbbf24;
+        --warning-bg: rgba(245, 158, 11, 0.18);
+        --border: #283652;
+        --shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 96px;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #ffffff;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.22rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-back {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Container */
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 18px 16px;
+    }
+
+    /* Summary Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 14px 8px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-num {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: block;
+    }
+    .stat-num.danger { color: var(--danger); }
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Inputs & Buttons */
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 13px 14px;
+      font-size: 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-alt);
+      color: var(--text);
+      margin-top: 6px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      background: var(--surface);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.22);
+    }
+    .search-box {
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .search-box input {
+      margin-top: 0;
+      padding-left: 40px;
+      background: var(--surface);
+    }
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 15px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.1s, opacity 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--surface-alt);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1.5px solid transparent;
+    }
+    .btn-sm { padding: 10px 12px; font-size: 0.88rem; border-radius: 11px; }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    /* Cards & Lists */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card-clickable { cursor: pointer; transition: transform 0.12s; }
+    .card-clickable:active { transform: scale(0.99); }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin: 0;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+    }
+    .badge-ok { background: var(--success-bg); color: var(--success); border-color: transparent; }
+    .badge-warn { background: var(--warning-bg); color: var(--warning); border-color: transparent; }
+    .badge-bad { background: var(--danger-bg); color: var(--danger); border-color: transparent; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .tag {
+      font-size: 0.79rem;
+      font-weight: 500;
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      padding: 4px 9px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* Form Controls */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 700; font-size: 0.93rem; }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 13px 14px;
+      border-radius: 13px;
+    }
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background-color: var(--border);
+      border-radius: 30px;
+      transition: .2s;
+      cursor: pointer;
+    }
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .2s;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .sub-box {
+      background: var(--surface-alt);
+      border-left: 3.5px solid var(--primary);
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 0 12px 12px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .sub-box.single { grid-template-columns: 1fr; }
+    .hidden { display: none !important; }
+
+    /* Floating Action Button */
+    .fab-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      background: linear-gradient(transparent, var(--bg) 30%);
+      z-index: 90;
+    }
+    .fab-container .btn {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #131c2e;
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; }
+
+    .empty-state {
+      text-align: center;
+      padding: 36px 16px;
+      color: var(--text-muted);
+    }
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      margin: 22px 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button id="btn-back" class="btn-back hidden" onclick="goBack()">← Volver</button>
+    <h1 id="header-title">Inventario de Aulas</h1>
+  </header>
+
+  <main id="app"></main>
+
+  <div id="fab-area" class="fab-container hidden"></div>
+  <div id="toast"></div>
+  <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleImport(event)">
+
+  <script>
+    // ==========================================
+    // 1. PWA SETUP (MANIFEST & SERVICE WORKER)
+    // ==========================================
+    (function setupPWA() {
+      try {
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#0d9488"/><rect x="96" y="120" width="320" height="210" rx="20" fill="#ffffff"/><rect x="216" y="330" width="80" height="45" fill="#cbd5e1"/><rect x="156" y="375" width="200" height="22" rx="11" fill="#ffffff"/><path d="M175 225l45 45 115-115" stroke="#059669" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        const iconUrl = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+        document.getElementById('apple-icon').href = iconUrl;
+
+        const manifest = {
+          name: "Inventario de Aulas",
+          short_name: "Aulas",
+          start_url: location.href,
+          display: "standalone",
+          background_color: "#0b1120",
+          theme_color: "#0d9488",
+          icons: [{ src: iconUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+          const swCode = `
+            const CACHE = 'inventario-aulas-v1';
+            self.addEventListener('install', e => {
+              e.waitUntil(caches.open(CACHE).then(c => c.addAll([self.location.href])));
+              self.skipWaiting();
+            });
+            self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+            self.addEventListener('fetch', e => {
+              e.respondWith(
+                caches.match(e.request).then(res => res || fetch(e.request).then(netRes => {
+                  const clone = netRes.clone();
+                  caches.open(CACHE).then(c => c.put(e.request, clone));
+                  return netRes;
+                }).catch(() => caches.match(self.location.href)))
+              );
+            });
+          `;
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+        }
+      } catch (e) {
+        console.warn("PWA init omitida:", e);
+      }
+    })();
+
+    // ==========================================
+    // 2. PERSISTENCIA SEGURA (localStorage)
+    // ==========================================
+    const STORAGE_KEY = 'inventario_aulas_db_v1';
+    let state = {
+      classrooms: [],
+      view: 'home', // 'home' | 'classroom-form' | 'classroom-detail' | 'pc-form'
+      selectedClassroomId: null,
+      selectedPcId: null,
+      searchClassroom: '',
+      searchPc: ''
+    };
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          state.classrooms = [];
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        state.classrooms = Array.isArray(parsed.classrooms) ? parsed.classrooms : [];
+      } catch (err) {
+        console.error("Error leyendo almacenamiento:", err);
+        state.classrooms = [];
+        showToast("⚠️ No se pudieron leer datos previos");
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          updatedAt: new Date().toISOString(),
+          classrooms: state.classrooms
+        }));
+      } catch (err) {
+        console.error("Error guardando datos:", err);
+        alert("Error al guardar en el dispositivo. Verifica que tengas espacio libre o exporta una copia de seguridad.");
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ==========================================
+    // 3. EXPORTAR E IMPORTAR
+    // ==========================================
+    function exportJSON() {
+      try {
+        const dataStr = JSON.stringify({
+          app: "Inventario de Aulas",
+          exportedAt: new Date().toISOString(),
+          classrooms: state.classrooms
+        }, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        downloadBlob(blob, `respaldo-aulas-${todayStr()}.json`);
+        showToast("✅ Copia JSON descargada");
+      } catch (e) {
+        alert("No se pudo exportar la copia: " + e.message);
+      }
+    }
+
+    function triggerImport() {
+      const inp = document.getElementById('import-file');
+      inp.value = '';
+      inp.click();
+    }
+
+    function handleImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const list = Array.isArray(parsed) ? parsed : parsed.classrooms;
+          if (!Array.isArray(list)) throw new Error("Formato de archivo inválido");
+          if (!confirm(`Se reemplazarán los datos actuales con ${list.length} aula(s) del respaldo. ¿Continuar?`)) return;
+          state.classrooms = list;
+          saveData();
+          state.view = 'home';
+          render();
+          showToast("✅ Copia restaurada con éxito");
+        } catch (err) {
+          alert("El archivo seleccionado no es una copia válida.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportCSV() {
+      try {
+        const headers = [
+          "Aula", "Total PCs Declaradas", "Proyector", "Cant. Proyector",
+          "Impresora", "Cant. Impresora", "TV", "Cant. TV",
+          "Sillas", "Cant. Sillas", "Condición Sillas",
+          "Mesas", "Cant. Mesas", "Condición Mesas",
+          "Código Máquina", "Tarjeta Video", "Procesador", "RAM (GB)",
+          "Almacenamiento Capacidad", "Almacenamiento Tipo", "Internet",
+          "Fuente Poder (W)", "Teclado", "Condición Teclado",
+          "Mouse", "Condición Mouse", "Monitor", "Monitor Modelo", "Monitor Pulgadas",
+          "Condición Monitor", "Observaciones"
+        ];
+
+        const rows = [headers];
+
+        state.classrooms.forEach(c => {
+          const baseAula = [
+            c.number,
+            c.declaredPcs || 0,
+            c.projector?.has ? "Sí" : "No",
+            c.projector?.has ? (c.projector.qty || 1) : 0,
+            c.printer?.has ? "Sí" : "No",
+            c.printer?.has ? (c.printer.qty || 1) : 0,
+            c.tv?.has ? "Sí" : "No",
+            c.tv?.has ? (c.tv.qty || 1) : 0,
+            c.chairs?.has ? "Sí" : "No",
+            c.chairs?.has ? (c.chairs.qty || 0) : 0,
+            c.chairs?.has ? (c.chairs.condition || "") : "",
+            c.tables?.has ? "Sí" : "No",
+            c.tables?.has ? (c.tables.qty || 0) : 0,
+            c.tables?.has ? (c.tables.condition || "") : ""
+          ];
+
+          const pcs = c.computers || [];
+          if (pcs.length === 0) {
+            rows.push([...baseAula, "Sin PCs registradas", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]);
+          } else {
+            pcs.forEach(pc => {
+              const hasMon = pc.hasMonitor !== false;
+              rows.push([
+                ...baseAula,
+                pc.code || "",
+                pc.gpu || "",
+                pc.cpu || "",
+                pc.ram || "",
+                pc.storageCap || "",
+                pc.storageType || "",
+                pc.internet ? "Sí" : "No",
+                pc.psu || "",
+                pc.keyboard?.has ? "Sí" : "No",
+                pc.keyboard?.has ? (pc.keyboard.condition || "") : "",
+                pc.mouse?.has ? "Sí" : "No",
+                pc.mouse?.has ? (pc.mouse.condition || "") : "",
+                hasMon ? "Sí" : "No",
+                hasMon ? (pc.monitorModel || "") : "",
+                hasMon ? (pc.monitorInches || "") : "",
+                hasMon ? (pc.monitorCondition || "") : "",
+                pc.notes || ""
+              ]);
+            });
+          }
+        });
+
+        // BOM UTF-8 + separador punto y coma para Excel en español
+        const csvContent = "﻿" + rows.map(r =>
+          r.map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(";")
+        ).join("
+");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        downloadBlob(blob, `inventario-computadoras-${todayStr()}.csv`);
+        showToast("📊 Archivo Excel (CSV) descargado");
+      } catch (e) {
+        alert("Error al generar CSV: " + e.message);
+      }
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // ==========================================
+    // 4. NAVEGACIÓN Y LÓGICA DE CÓDIGOS
+    // ==========================================
+    function navigate(view, classroomId = null, pcId = null) {
+      state.view = view;
+      if (classroomId !== null) state.selectedClassroomId = classroomId;
+      state.selectedPcId = pcId;
+      window.scrollTo(0, 0);
+      render();
+    }
+
+    function goBack() {
+      if (state.view === 'pc-form') {
+        navigate('classroom-detail', state.selectedClassroomId);
+      } else if (state.view === 'classroom-form') {
+        if (state.selectedClassroomId) {
+          navigate('classroom-detail', state.selectedClassroomId);
+        } else {
+          navigate('home');
+        }
+      } else {
+        navigate('home');
+      }
+    }
+
+    function getClassroom(id) {
+      return state.classrooms.find(c => c.id === id);
+    }
+
+    function suggestNextCode(classroom) {
+      const pcs = classroom?.computers || [];
+      if (pcs.length === 0) return "pc1";
+      const lastCode = (pcs[pcs.length - 1].code || "").trim();
+      const match = lastCode.match(/^(.*?)(\d+)$/);
+      if (match) {
+        const prefix = match[1];
+        const numStr = match[2];
+        const nextNum = String(parseInt(numStr, 10) + 1).padStart(numStr.length, '0');
+        return prefix + nextNum;
+      }
+      return lastCode ? `${lastCode}-2` : `pc${pcs.length + 1}`;
+    }
+
+    function createBlankPc(code) {
+      return {
+        id: uid(),
+        code: code,
+        gpu: 'Integrada',
+        cpu: '',
+        ram: '',
+        storageCap: '',
+        storageType: 'Sólido SSD',
+        internet: true,
+        psu: '',
+        keyboard: { has: true, condition: 'Buena' },
+        mouse: { has: true, condition: 'Buena' },
+        hasMonitor: true,
+        monitorModel: '',
+        monitorInches: '',
+        monitorCondition: 'Buena',
+        notes: ''
+      };
+    }
+
+    function syncComputersCount(classroom, targetCount) {
+      if (!Array.isArray(classroom.computers)) classroom.computers = [];
+      const current = classroom.computers.length;
+      if (targetCount > current) {
+        for (let i = current; i < targetCount; i++) {
+          const nextCode = suggestNextCode(classroom);
+          classroom.computers.push(createBlankPc(nextCode));
+        }
+      }
+    }
+
+    function getGlobalStats() {
+      let totalAulas = state.classrooms.length;
+      let totalPcs = 0;
+      let badPeripherals = 0;
+
+      state.classrooms.forEach(c => {
+        const pcs = c.computers || [];
+        totalPcs += pcs.length;
+        pcs.forEach(pc => {
+          const hasMon = pc.hasMonitor !== false;
+          const badKb = pc.keyboard?.has && pc.keyboard.condition === 'Mala';
+          const badMouse = pc.mouse?.has && pc.mouse.condition === 'Mala';
+          const badMon = hasMon && pc.monitorCondition === 'Mala';
+          if (badKb || badMouse || badMon) badPeripherals++;
+        });
+      });
+
+      return { totalAulas, totalPcs, badPeripherals };
+    }
+
+    // ==========================================
+    // 5. RENDERIZADO DE VISTAS
+    // ==========================================
+    function render() {
+      const app = document.getElementById('app');
+      const backBtn = document.getElementById('btn-back');
+      const title = document.getElementById('header-title');
+      const fab = document.getElementById('fab-area');
+
+      fab.classList.add('hidden');
+      fab.innerHTML = '';
+
+      if (state.view === 'home') {
+        backBtn.classList.add('hidden');
+        title.textContent = 'Inventario de Aulas';
+        renderHome(app, fab);
+      } else if (state.view === 'classroom-form') {
+        backBtn.classList.remove('hidden');
+        title.textContent = state.selectedClassroomId ? 'Editar Aula' : 'Nueva Aula';
+        renderClassroomForm(app);
+      } else if (state.view === 'classroom-detail') {
+        backBtn.classList.remove('hidden');
+        const c = getClassroom(state.selectedClassroomId);
+        if (!c) return navigate('home');
+        title.textContent = `Aula ${c.number}`;
+        renderClassroomDetail(app, fab, c);
+      } else if (state.view === 'pc-form') {
+        backBtn.classList.remove('hidden');
+        title.textContent = state.selectedPcId ? 'Editar Computadora' : 'Revisar Computadora';
+        renderPcForm(app);
+      }
+    }
+
+    // --- VISTA 1: INICIO ---
+    function renderHome(app, fab) {
+      const stats = getGlobalStats();
+      const query = state.searchClassroom.toLowerCase().trim();
+      const filtered = state.classrooms.filter(c =>
+        String(c.number).toLowerCase().includes(query)
+      );
+
+      let html = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-num">${stats.totalAulas}</span>
+            <span class="stat-label">Aulas</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">${stats.totalPcs}</span>
+            <span class="stat-label">PCs Totales</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num ${stats.badPeripherals > 0 ? 'danger' : ''}">${stats.badPeripherals}</span>
+            <span class="stat-label">PCs c/ Fallas</span>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <input type="text" placeholder="Buscar aula por número..." value="${esc(state.searchClassroom)}" oninput="onSearchClassroom(this.value)">
+        </div>
+      `;
+
+      if (filtered.length === 0) {
+        html += `
+          <div class="empty-state">
+            <p style="font-size:2.5rem; margin:0 0 8px;">🏫</p>
+            <strong>${state.classrooms.length === 0 ? 'Aún no hay aulas registradas' : 'No se encontraron aulas'}</strong>
+            <p style="font-size:0.9rem;">Toca "+ Agregar aula" para comenzar el relevamiento.</p>
+          </div>
+        `;
+      } else {
+        filtered.forEach(c => {
+          const pcs = c.computers || [];
+          const reviewed = pcs.filter(p => p.reviewed).length;
+          const total = pcs.length || (parseInt(c.declaredPcs, 10) || 0);
+          const isComplete = total > 0 && reviewed >= total;
+
+          const items = [];
+          if (c.projector?.has) items.push(`📽️ Proyector (${c.projector.qty || 1})`);
+          if (c.printer?.has) items.push(`🖨️ Impresora (${c.printer.qty || 1})`);
+          if (c.tv?.has) items.push(`📺 TV (${c.tv.qty || 1})`);
+          if (c.chairs?.has) items.push(`🪑 Sillas: ${c.chairs.qty || 0} (${c.chairs.condition})`);
+          if (c.tables?.has) items.push(`🪵 Mesas: ${c.tables.qty || 0} (${c.tables.condition})`);
+
+          html += `
+            <div class="card card-clickable" onclick="navigate('classroom-detail', '${c.id}')">
+              <div class="card-header">
+                <h2 class="card-title">Aula ${esc(c.number)}</h2>
+                <span class="badge ${isComplete ? 'badge-ok' : 'badge-warn'}">
+                  💻 ${reviewed} / ${total} revisadas
+                </span>
+              </div>
+              <div class="tags">
+                ${items.length ? items.map(i => `<span class="tag">${esc(i)}</span>`).join('') : '<span class="tag">Sin equipamiento adicional</span>'}
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      html += `
+        <h3 class="section-title">Respaldo y Exportación</h3>
+        <div class="card">
+          <button class="btn btn-secondary btn-sm" onclick="exportCSV()">📊 Exportar a Excel (CSV)</button>
+          <div class="btn-row">
+            <button class="btn btn-secondary btn-sm" onclick="exportJSON()">⬇️ Exportar copia</button>
+            <button class="btn btn-secondary btn-sm" onclick="triggerImport()">⬆️ Importar copia</button>
+          </div>
+        </div>
+      `;
+
+      app.innerHTML = html;
+
+      fab.classList.remove('hidden');
+      fab.innerHTML = `<button class="btn btn-primary" onclick="navigate('classroom-form', '')">+ Agregar aula</button>`;
+    }
+
+    function onSearchClassroom(val) {
+      state.searchClassroom = val;
+      render();
+      const inp = document.querySelector('.search-box input');
+      if (inp) { inp.focus(); inp.setSelectionRange(val.length, val.length); }
+    }
+
+    // --- VISTA 2: FORMULARIO DE AULA ---
+    function renderClassroomForm(app) {
+      const existing = state.selectedClassroomId ? getClassroom(state.selectedClassroomId) : null;
+      const data = existing || {
+        number: '',
+        declaredPcs: '',
+        projector: { has: false, qty: 1 },
+        printer: { has: false, qty: 1 },
+        tv: { has: false, qty: 1 },
+        chairs: { has: false, qty: 20, condition: 'Buena' },
+        tables: { has: false, qty: 10, condition: 'Buena' }
+      };
+
+      app.innerHTML = `
+        <form onsubmit="saveClassroom(event)">
+          <div class="card">
+            <div class="form-group">
+              <label class="form-label">Número o nombre de aula *</label>
+              <input type="text" id="f-number" required placeholder="Ej. 104, Lab A, PB-2" value="${esc(data.number)}">
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Cantidad total de computadoras</label>
+              <input type="number" id="f-declaredPcs" min="0" inputmode="numeric" placeholder="Ej. 10 (se crearán pc1, pc2...)" value="${esc(data.declaredPcs)}">
+            </div>
+          </div>
+
+          <h3 class="section-title">Equipamiento del Aula</h3>
+
+          <!-- Proyector -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">📽️ Proyector</span>
+              <label class="switch">
+                <input type="checkbox" id="f-proj-has" ${data.projector?.has ? 'checked' : ''} onchange="toggleSub('sub-proj', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-proj" class="sub-box single ${data.projector?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="f-proj-qty" min="1" inputmode="numeric" value="${data.projector?.qty || 1}">
+              </div>
+            </div>
+          </div>
+
+          <!-- Impresora -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">🖨️ Impresora</span>
+              <label class="switch">
+                <input type="checkbox" id="f-print-has" ${data.printer?.has ? 'checked' : ''} onchange="toggleSub('sub-print', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-print" class="sub-box single ${data.printer?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="f-print-qty" min="1" inputmode="numeric" value="${data.printer?.qty || 1}">
+              </div>
+            </div>
+          </div>
+
+          <!-- TV -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">📺 TV</span>
+              <label class="switch">
+                <input type="checkbox" id="f-tv-has" ${data.tv?.has ? 'checked' : ''} onchange="toggleSub('sub-tv', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-tv" class="sub-box single ${data.tv?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="f-tv-qty" min="1" inputmode="numeric" value="${data.tv?.qty || 1}">
+              </div>
+            </div>
+          </div>
+
+          <!-- Sillas -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">🪑 Sillas</span>
+              <label class="switch">
+                <input type="checkbox" id="f-chairs-has" ${data.chairs?.has ? 'checked' : ''} onchange="toggleSub('sub-chairs', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-chairs" class="sub-box ${data.chairs?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="f-chairs-qty" min="0" inputmode="numeric" value="${data.chairs?.qty ?? 0}">
+              </div>
+              <div>
+                <label class="form-label">Condición</label>
+                <select id="f-chairs-cond">
+                  ${condOptions(data.chairs?.condition)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mesas -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">🪵 Mesas</span>
+              <label class="switch">
+                <input type="checkbox" id="f-tables-has" ${data.tables?.has ? 'checked' : ''} onchange="toggleSub('sub-tables', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-tables" class="sub-box ${data.tables?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="f-tables-qty" min="0" inputmode="numeric" value="${data.tables?.qty ?? 0}">
+              </div>
+              <div>
+                <label class="form-label">Condición</label>
+                <select id="f-tables-cond">
+                  ${condOptions(data.tables?.condition)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">💾 Guardar Aula</button>
+        </form>
+      `;
+    }
+
+    function condOptions(selected) {
+      return ['Buena', 'Regular', 'Mala'].map(opt =>
+        `<option value="${opt}" ${selected === opt ? 'selected' : ''}>${opt}</option>`
+      ).join('');
+    }
+
+    function toggleSub(id, show) {
+      document.getElementById(id).classList.toggle('hidden', !show);
+    }
+
+    function saveClassroom(e) {
+      e.preventDefault();
+      const number = document.getElementById('f-number').value.trim();
+      if (!number) return;
+
+      const declaredPcs = parseInt(document.getElementById('f-declaredPcs').value, 10) || 0;
+
+      const payload = {
+        number,
+        declaredPcs,
+        projector: {
+          has: document.getElementById('f-proj-has').checked,
+          qty: parseInt(document.getElementById('f-proj-qty').value, 10) || 1
+        },
+        printer: {
+          has: document.getElementById('f-print-has').checked,
+          qty: parseInt(document.getElementById('f-print-qty').value, 10) || 1
+        },
+        tv: {
+          has: document.getElementById('f-tv-has').checked,
+          qty: parseInt(document.getElementById('f-tv-qty').value, 10) || 1
+        },
+        chairs: {
+          has: document.getElementById('f-chairs-has').checked,
+          qty: parseInt(document.getElementById('f-chairs-qty').value, 10) || 0,
+          condition: document.getElementById('f-chairs-cond').value
+        },
+        tables: {
+          has: document.getElementById('f-tables-has').checked,
+          qty: parseInt(document.getElementById('f-tables-qty').value, 10) || 0,
+          condition: document.getElementById('f-tables-cond').value
+        }
+      };
+
+      if (state.selectedClassroomId) {
+        const idx = state.classrooms.findIndex(c => c.id === state.selectedClassroomId);
+        if (idx !== -1) {
+          state.classrooms[idx] = { ...state.classrooms[idx], ...payload };
+          syncComputersCount(state.classrooms[idx], declaredPcs);
+        }
+        saveData();
+        showToast("✅ Aula actualizada");
+        navigate('classroom-detail', state.selectedClassroomId);
+      } else {
+        const newId = uid();
+        const newClassroom = { id: newId, ...payload, computers: [] };
+        syncComputersCount(newClassroom, declaredPcs);
+        state.classrooms.push(newClassroom);
+        saveData();
+        showToast(declaredPcs > 0 ? `✅ Aula creada con ${declaredPcs} PCs` : "✅ Aula creada");
+        navigate('classroom-detail', newId);
+      }
+    }
+
+    function deleteClassroom(id) {
+      const c = getClassroom(id);
+      if (!c) return;
+      if (!confirm(`¿Seguro que deseas eliminar el Aula "${c.number}" y todas sus computadoras registradas?`)) return;
+      state.classrooms = state.classrooms.filter(item => item.id !== id);
+      saveData();
+      showToast("🗑️ Aula eliminada");
+      navigate('home');
+    }
+
+    // --- VISTA 3: DETALLE DE AULA ---
+    function renderClassroomDetail(app, fab, c) {
+      const pcs = c.computers || [];
+      const reviewedCount = pcs.filter(p => p.reviewed).length;
+      const total = pcs.length || (parseInt(c.declaredPcs, 10) || 0);
+      const isComplete = total > 0 && reviewedCount >= total;
+      const query = state.searchPc.toLowerCase().trim();
+      const filteredPcs = pcs.filter(p => (p.code || '').toLowerCase().includes(query));
+
+      const equip = [];
+      if (c.projector?.has) equip.push(`📽️ Proyector: ${c.projector.qty || 1}`);
+      if (c.printer?.has) equip.push(`🖨️ Impresora: ${c.printer.qty || 1}`);
+      if (c.tv?.has) equip.push(`📺 TV: ${c.tv.qty || 1}`);
+      if (c.chairs?.has) equip.push(`🪑 Sillas: ${c.chairs.qty || 0} (${c.chairs.condition})`);
+      if (c.tables?.has) equip.push(`🪵 Mesas: ${c.tables.qty || 0} (${c.tables.condition})`);
+
+      let html = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span style="font-size:0.85rem; color:var(--text-muted);">Avance de revisión</span>
+              <div style="font-size:1.3rem; font-weight:800;">${reviewedCount} de ${total} computadoras revisadas</div>
+            </div>
+            <span class="badge ${isComplete ? 'badge-ok' : 'badge-warn'}">
+              ${isComplete ? 'Completo' : 'En progreso'}
+            </span>
+          </div>
+          <div class="tags">
+            ${equip.length ? equip.map(e => `<span class="tag">${esc(e)}</span>`).join('') : '<span class="tag">Sin equipos extra</span>'}
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-secondary btn-sm" onclick="navigate('classroom-form', '${c.id}')">✏️ Editar aula</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteClassroom('${c.id}')">🗑️ Eliminar aula</button>
+          </div>
+        </div>
+
+        <h3 class="section-title">Computadoras del Aula (${pcs.length})</h3>
+
+        <div class="search-box">
+          <input type="text" placeholder="Buscar PC por código (ej. pc1, pc2)..." value="${esc(state.searchPc)}" oninput="onSearchPc(this.value)">
+        </div>
+      `;
+
+      if (filteredPcs.length === 0) {
+        html += `
+          <div class="empty-state">
+            <p style="font-size:2.2rem; margin:0 0 8px;">🖥️</p>
+            <strong>${pcs.length === 0 ? 'No hay computadoras cargadas en esta aula' : 'Ninguna máquina coincide con la búsqueda'}</strong>
+            <p style="font-size:0.9rem;">Presiona "+ Agregar computadora" para relevar una máquina.</p>
+          </div>
+        `;
+      } else {
+        filteredPcs.forEach(pc => {
+          const hasMon = pc.hasMonitor !== false;
+          const hasBad = (pc.keyboard?.has && pc.keyboard.condition === 'Mala') ||
+                         (pc.mouse?.has && pc.mouse.condition === 'Mala') ||
+                         (hasMon && pc.monitorCondition === 'Mala');
+
+          let statusBadge = `<span class="badge badge-warn">⏳ Pendiente</span>`;
+          if (pc.reviewed) {
+            statusBadge = `<span class="badge ${hasBad ? 'badge-bad' : 'badge-ok'}">${hasBad ? '⚠️ Periférico Malo' : '✓ Revisada'}</span>`;
+          }
+
+          html += `
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">🖥️ ${esc(pc.code)}</h4>
+                ${statusBadge}
+              </div>
+              <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:8px;">
+                ${esc(pc.cpu || 'CPU s/d')} • ${pc.ram ? pc.ram + ' GB RAM' : 'RAM s/d'} • ${pc.storageCap ? esc(pc.storageCap) + ' ' + esc(pc.storageType || '') : 'Disco s/d'}${pc.psu ? ' • ' + esc(pc.psu) + 'W' : ''}
+              </div>
+              <div class="tags">
+                <span class="tag">Placa/Video: ${esc(pc.gpu || 'Integrada')}</span>
+                <span class="tag">${pc.internet ? '🌐 Con Internet' : '🚫 Sin Internet'}</span>
+                <span class="tag">⌨️ ${pc.keyboard?.has ? pc.keyboard.condition : 'Sin teclado'}</span>
+                <span class="tag">🖱️ ${pc.mouse?.has ? pc.mouse.condition : 'Sin mouse'}</span>
+                <span class="tag">🖥️ ${hasMon ? (pc.monitorInches ? pc.monitorInches + '" ' : '') + esc(pc.monitorCondition || 'Buena') : 'Sin monitor'}</span>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary btn-sm" onclick="navigate('pc-form', '${c.id}', '${pc.id}')">${pc.reviewed ? '✏️ Editar datos' : '📋 Llenar ficha'}</button>
+                <button class="btn btn-danger btn-sm" onclick="deletePc('${c.id}', '${pc.id}')">🗑️ Eliminar</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      app.innerHTML = html;
+      fab.classList.remove('hidden');
+      fab.innerHTML = `<button class="btn btn-primary" onclick="navigate('pc-form', '${c.id}', null)">+ Agregar computadora</button>`;
+    }
+
+    function onSearchPc(val) {
+      state.searchPc = val;
+      render();
+      const inp = document.querySelector('.search-box input');
+      if (inp) { inp.focus(); inp.setSelectionRange(val.length, val.length); }
+    }
+
+    // --- VISTA 4: FORMULARIO DE COMPUTADORA ---
+    function renderPcForm(app) {
+      const c = getClassroom(state.selectedClassroomId);
+      if (!c) return navigate('home');
+
+      const existing = state.selectedPcId ? (c.computers || []).find(p => p.id === state.selectedPcId) : null;
+      const defaultCode = existing ? existing.code : suggestNextCode(c);
+
+      const pc = existing || {
+        code: defaultCode,
+        gpu: 'Integrada',
+        cpu: '',
+        ram: '',
+        storageCap: '',
+        storageType: 'Sólido SSD',
+        internet: true,
+        psu: '',
+        keyboard: { has: true, condition: 'Buena' },
+        mouse: { has: true, condition: 'Buena' },
+        hasMonitor: true,
+        monitorModel: '',
+        monitorInches: '',
+        monitorCondition: 'Buena',
+        notes: ''
+      };
+
+      const hasMonitor = pc.hasMonitor !== false;
+
+      // Buscar siguiente PC en la lista para botón rápido
+      const pcsList = c.computers || [];
+      const currentIndex = existing ? pcsList.findIndex(p => p.id === existing.id) : -1;
+      const nextPcInList = (currentIndex !== -1 && currentIndex + 1 < pcsList.length) ? pcsList[currentIndex + 1] : null;
+
+      app.innerHTML = `
+        <form onsubmit="savePc(event)">
+          <div class="card">
+            <div class="form-group">
+              <label class="form-label">Código de máquina (ej. pc1, pc2) *</label>
+              <input type="text" id="p-code" required placeholder="Ej. pc1, pc2" value="${esc(pc.code)}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tipo de placa de video</label>
+              <select id="p-gpu">
+                <option value="Integrada" ${pc.gpu === 'Integrada' ? 'selected' : ''}>Integrada</option>
+                <option value="Dedicada" ${pc.gpu === 'Dedicada' ? 'selected' : ''}>Dedicada</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Procesador</label>
+              <input type="text" id="p-cpu" placeholder="Ej. Intel Core i5-10400, Ryzen 5" value="${esc(pc.cpu)}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">RAM (en GB)</label>
+              <input type="number" id="p-ram" min="0" inputmode="numeric" placeholder="Ej. 8" value="${esc(pc.ram)}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Almacenamiento (Capacidad y Tipo)</label>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <input type="text" id="p-scap" placeholder="Ej. 240 GB, 1 TB" value="${esc(pc.storageCap)}">
+                <select id="p-stype">
+                  <option value="Sólido SSD" ${pc.storageType === 'Sólido SSD' ? 'selected' : ''}>Sólido SSD</option>
+                  <option value="Mecánico HDD" ${pc.storageType === 'Mecánico HDD' ? 'selected' : ''}>Mecánico HDD</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Fuente de poder (Watts)</label>
+              <input type="number" id="p-psu" min="0" inputmode="numeric" placeholder="Ej. 500" value="${esc(pc.psu)}">
+            </div>
+
+            <div class="toggle-row">
+              <span class="form-label">🌐 Conexión a Internet</span>
+              <label class="switch">
+                <input type="checkbox" id="p-net" ${pc.internet ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <h3 class="section-title">Periféricos y Monitor</h3>
+
+          <!-- Teclado -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">⌨️ Teclado</span>
+              <label class="switch">
+                <input type="checkbox" id="p-kb-has" ${pc.keyboard?.has ? 'checked' : ''} onchange="toggleSub('sub-kb', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-kb" class="sub-box single ${pc.keyboard?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Condición del teclado</label>
+                <select id="p-kb-cond">${condOptions(pc.keyboard?.condition)}</select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mouse -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">🖱️ Mouse</span>
+              <label class="switch">
+                <input type="checkbox" id="p-ms-has" ${pc.mouse?.has ? 'checked' : ''} onchange="toggleSub('sub-ms', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-ms" class="sub-box single ${pc.mouse?.has ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Condición del mouse</label>
+                <select id="p-ms-cond">${condOptions(pc.mouse?.condition)}</select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monitor -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <span class="form-label">🖥️ Monitor</span>
+              <label class="switch">
+                <input type="checkbox" id="p-mon-has" ${hasMonitor ? 'checked' : ''} onchange="toggleSub('sub-mon', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="sub-mon" class="sub-box single ${hasMonitor ? '' : 'hidden'}">
+              <div>
+                <label class="form-label">Modelo o marca</label>
+                <input type="text" id="p-mon-model" placeholder="Ej. Samsung S22, LG, Dell" value="${esc(pc.monitorModel)}">
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:4px;">
+                <div>
+                  <label class="form-label">Pulgadas</label>
+                  <input type="text" id="p-mon-inch" inputmode="decimal" placeholder="Ej. 19, 22, 24" value="${esc(pc.monitorInches)}">
+                </div>
+                <div>
+                  <label class="form-label">Condición</label>
+                  <select id="p-mon-cond">${condOptions(pc.monitorCondition)}</select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observaciones -->
+          <div class="card">
+            <label class="form-label">📝 Observaciones (opcional)</label>
+            <textarea id="p-notes" rows="3" placeholder="Ej. Falta tecla Enter, cable VGA flojo, hace ruido el ventilador...">${esc(pc.notes)}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">💾 Guardar Computadora</button>
+          ${nextPcInList
+            ? `<button type="button" class="btn btn-secondary" style="margin-top:10px;" onclick="savePcAndGo('${nextPcInList.id}')">💾 Guardar y pasar a ${esc(nextPcInList.code)} →</button>`
+            : (!existing ? `<button type="button" class="btn btn-secondary" style="margin-top:10px;" onclick="savePcAndGo(null)">💾 Guardar y cargar siguiente →</button>` : '')
+          }
+        </form>
+      `;
+    }
+
+    function collectPcPayload() {
+      const code = document.getElementById('p-code').value.trim();
+      if (!code) {
+        alert("El código de máquina es obligatorio.");
+        return null;
+      }
+      const hasMon = document.getElementById('p-mon-has').checked;
+      return {
+        code,
+        reviewed: true,
+        gpu: document.getElementById('p-gpu').value,
+        cpu: document.getElementById('p-cpu').value.trim(),
+        ram: document.getElementById('p-ram').value.trim(),
+        storageCap: document.getElementById('p-scap').value.trim(),
+        storageType: document.getElementById('p-stype').value,
+        internet: document.getElementById('p-net').checked,
+        psu: document.getElementById('p-psu').value.trim(),
+        keyboard: {
+          has: document.getElementById('p-kb-has').checked,
+          condition: document.getElementById('p-kb-cond').value
+        },
+        mouse: {
+          has: document.getElementById('p-ms-has').checked,
+          condition: document.getElementById('p-ms-cond').value
+        },
+        hasMonitor: hasMon,
+        monitorModel: hasMon ? document.getElementById('p-mon-model').value.trim() : '',
+        monitorInches: hasMon ? document.getElementById('p-mon-inch').value.trim() : '',
+        monitorCondition: hasMon ? document.getElementById('p-mon-cond').value : 'Buena',
+        notes: document.getElementById('p-notes').value.trim()
+      };
+    }
+
+    function commitPc(payload) {
+      const c = getClassroom(state.selectedClassroomId);
+      if (!c) return false;
+      if (!Array.isArray(c.computers)) c.computers = [];
+
+      if (state.selectedPcId) {
+        const idx = c.computers.findIndex(p => p.id === state.selectedPcId);
+        if (idx !== -1) c.computers[idx] = { ...c.computers[idx], ...payload };
+      } else {
+        c.computers.push({ id: uid(), ...payload });
+      }
+      saveData();
+      return true;
+    }
+
+    function savePc(e) {
+      e.preventDefault();
+      const payload = collectPcPayload();
+      if (!payload) return;
+      if (commitPc(payload)) {
+        showToast("✅ Computadora guardada");
+        navigate('classroom-detail', state.selectedClassroomId);
+      }
+    }
+
+    function savePcAndGo(nextPcId) {
+      const payload = collectPcPayload();
+      if (!payload) return;
+      if (commitPc(payload)) {
+        showToast(`✅ ${payload.code} guardada`);
+        navigate('pc-form', state.selectedClassroomId, nextPcId);
+      }
+    }
+
+    function deletePc(classroomId, pcId) {
+      const c = getClassroom(classroomId);
+      if (!c) return;
+      const pc = (c.computers || []).find(p => p.id === pcId);
+      if (!pc) return;
+      if (!confirm(`¿Eliminar la computadora "${pc.code}" del Aula ${c.number}?`)) return;
+      c.computers = c.computers.filter(p => p.id !== pcId);
+      saveData();
+      showToast("🗑️ Computadora eliminada");
+      render();
+    }
+
+    // Inicializar aplicación
+    loadData();
+    render();
+  </script>
+</body>
+</html>
